@@ -1,5 +1,3 @@
-?><!-- Hak Cipta Ghost Exploiter Team
-Thanks All Member GhostExploiterTeam -->
 
 <?php; ?>
 <!DOCTYPE html>
